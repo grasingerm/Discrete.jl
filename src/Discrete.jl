@@ -2,6 +2,7 @@ module Discrete
 
 export ConstSequence, Sequence, DFun;
 export fdiff, bdiff, cdiff;
+export euler, runge_kutta;
 
 import FastAnonymous;
 
@@ -158,6 +159,43 @@ function cdiff(f::DFun, x::Real, h::Real; order=1)
                           -binomial(order, i) * f(x + (n/2 - i) * h));
   end
   return sum;
+end
+
+#! Approximate the solution to an ODE using Euler's method
+#!
+#! \param   df    Differential equation, df = df(x,t)
+#! \param   x0    Initial value of x
+#! \param   ts    Range of time values     
+function euler(df::DFun, x0::Real, ts::Range)
+  const h = step(ts);
+  x = x0;
+
+  for t in ts
+    x += h * df(x, t); 
+  end
+
+  return x;
+end
+
+#! Approximate the solution to an ODE using Runge-Kutta method
+#!
+#! \param   df    Differential equation, df = df(x,t)
+#! \param   x0    Initial value of x
+#! \param   ts    Range of time values     
+function runge_kutta(df::DFun, x0::Real, ts::Range)
+  const h = step(ts);
+  x = x0;
+
+  for t in ts
+    k1    =   h * df(x, t);
+    k2    =   h * df(x + 0.5*k1, t + 0.5*h);
+    k3    =   h * df(x + 0.5*k2, t + 0.5*h);
+    k4    =   h * df(x + k3, t + h);
+
+    x    +=   1.0/6.0 * (k1 + 2*k2 + 2*k3 + k4);
+  end
+
+  return x;
 end
 
 end # end module
