@@ -163,15 +163,20 @@ end
 
 #! Approximate the solution to an ODE using Euler's method
 #!
-#! \param   df    Differential equation, df = df(x,t)
-#! \param   x0    Initial value of x
-#! \param   ts    Range of time values     
-function euler(df::DFun, x0::Real, ts::Range)
-  const h = step(ts);
-  x = x0;
+#! \param   df      Differential equation, df = df(x,t)
+#! \param   x0      Initial value of x
+#! \param   t0      Initial value of t
+#! \param   tf      Final value of t
+#! \param   nsteps  Number of timesteps
+#! \param   Approximate x(tf)
+function euler(df::DFun, x0::Real, t0::Real, tf::Real, nsteps::Int)
+  const h   =   (tf - t0) / nsteps;
+  x         =   x0;
+  t         =   t0;
 
-  for t in ts
-    x += h * df(x, t); 
+  for i=1:nsteps
+    x += h * df(x, t);
+    t += h;
   end
 
   return x;
@@ -179,14 +184,18 @@ end
 
 #! Approximate the solution to an ODE using Runge-Kutta method
 #!
-#! \param   df    Differential equation, df = df(x,t)
-#! \param   x0    Initial value of x
-#! \param   ts    Range of time values     
-function runge_kutta(df::DFun, x0::Real, ts::Range)
-  const h = step(ts);
-  x = x0;
+#! \param   df      Differential equation, df = df(x,t)
+#! \param   x0      Initial value of x
+#! \param   t0      Initial value of t
+#! \param   tf      Final value of t
+#! \param   nsteps  Number of timesteps
+#! \param   Approximate x(tf)
+function runge_kutta(df::DFun, x0::Real, t0::Real, tf::Real, nsteps::Int)
+  const h   =   (tf - t0) / nsteps;
+  x         =   x0;
+  t         =   t0;
 
-  for t in ts
+  for i=1:nsteps
     k1    =   h * df(x, t);
     k2    =   h * df(x + 0.5*k1, t + 0.5*h);
     k3    =   h * df(x + 0.5*k2, t + 0.5*h);
