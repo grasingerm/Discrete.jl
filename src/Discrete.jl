@@ -3,6 +3,7 @@ module Discrete
 export ConstSequence, Sequence, DFun;
 export fdiff, bdiff, cdiff;
 export euler, runge_kutta;
+export trapezoid, simpsons; 
 
 import FastAnonymous;
 
@@ -80,11 +81,11 @@ end
 #! \param     order   Order of difference
 #! \return    Backward difference
 function bdiff(seq::Sequence, n::Int; order::Int=1)
-  @assert(order > 0, "unable to compute $order order forward difference");
+  @assert(order > 0, "unable to compute $order order backward difference");
 
   sum = 0.0;
   for i=0:order
-    sum += (((order-i)%2==0) ? 
+    sum += ((i % 2 == 0) ? 
               binomial(order, i) * seq(n - i) : 
              -binomial(order, i) * seq(n - i));
   end
@@ -205,6 +206,45 @@ function runge_kutta(df::DFun, x0::Real, t0::Real, tf::Real, nsteps::Int)
   end
 
   return x;
+end
+
+#! Integrate using trapezoidal rule
+#!
+#! \param   f     Function to integrate
+#! \param   x_0   Starting x
+#! \param   x_1   Ending x
+#! \param   n     Number of discrete points (must be even)
+#! \return        Approximate integral
+function trapezoid(f::DFun, x_0::Real, x_1::Real, n::Int)
+  const dx  =   (x_1 - x_0) / n;
+  sum       =   dx * (f(x_1)+f(x_0)) / 2.0;
+
+  for (i, x) = enumerate(linspace(x_0+dx, x_1-dx, n-1));
+    sum += dx * f(x);
+  end
+
+  return sum;
+end
+
+#! Integrate using simpsons rule
+#!
+#! \param   f     Function to integrate
+#! \param   x_0   Starting x
+#! \param   x_1   Ending x
+#! \param   n     Number of discrete points (must be even)
+#! \return        Approximate integral
+function simpsons(f::DFun, x_0::Real, x_1::Real, n::Int)
+  @assert(n % 2 == 0, "Number of integration points must be even for "         *
+                      "Simpson's rule. $n is not an even number.");
+
+  const dx  =   (x_1 - x_0) / n;
+  sum       =   dx * (f(x_1)+f(x_0)) / 3.0;
+
+  for (i, x) = enumerate(linspace(x_0+dx, x_1-dx, n-1));
+    sum += dx * f(x) * ((i % 2 == 0) ? 2.0/3.0 : 4.0/3.0);
+  end
+
+  return sum;
 end
 
 end # end module
